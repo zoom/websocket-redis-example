@@ -4,11 +4,6 @@ require('dotenv/config')
 // Use the axios module to make HTTP requests from Node
 const axios = require('axios')
 
-// Run the express app
-const express = require('express')
-const bodyParser = require('body-parser')
-const app = express()
-
 // Import Redis client
 const Redis = require('ioredis');
 const redis = new Redis({
@@ -16,10 +11,7 @@ const redis = new Redis({
     port: 6379
 });
 
-// Express middleware for parsing JSON bodies
-app.use(bodyParser.json());
-
-app.get('/', async (req, res) => {
+(async () => {
     try {
         const authString = Buffer.from(`${process.env.clientID}:${process.env.clientSecret}`).toString('base64');
 
@@ -32,7 +24,7 @@ app.get('/', async (req, res) => {
 
         let bwt = response.data.access_token;
 
-        // Logs your access tokens in the browser
+        // Logs your access tokens in the console
         console.log(`access_token: ${bwt}`);
 
         // We can now use the access token to authenticate API calls
@@ -44,17 +36,61 @@ app.get('/', async (req, res) => {
         console.log(`User Id is ${process.env.user_id}`);
         console.log('API call ', userResponse.data);
 
-        // Display Websocket in browser
-        res.send(generateHTML(bwt));
+        // Connect to WebSocket
+        const WebSocket = require('ws');
+        const exampleSocket = new WebSocket(`wss://ws.zoom.us/ws?subscriptionId=${process.env.subscription_id}&access_token=${bwt}`);
+
+        exampleSocket.on('open', () => {
+            console.log("Connection...");
+
+            // Send a heartbeat message
+            const msg = {
+                module: "heartbeat"
+            };
+            exampleSocket.send(JSON.stringify(msg));
+        });
+
+        exampleSocket.on('message', (data) => {
+            console.log(JSON.parse(data));
+
+            // Send a POST request to store the event data
+            axios.post('http://localhost:4000/store-event', { eventData: typeof data === 'string' ? JSON.parse(data) : data })
+                .then((response) => {
+                    console.log('Event data stored:', response.data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        });
+
+        exampleSocket.on('close', (event) => {
+            console.log(event);
+        });
+
+        // Send heartbeat message periodically
+        setInterval(() => {
+            const msg = {
+                module: "heartbeat"
+            };
+            exampleSocket.send(JSON.stringify(msg));
+            console.log(JSON.stringify(msg));
+        }, 25000);
+
     } catch (error) {
         console.error('Error:', error);
     }
-});
+})();
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+
+app.use(bodyParser.json());
+
 let eventCounter = 1; // Initialize event counter
 
 app.post('/store-event', async (req, res) => {
     try {
-        
         // Prepare the data
         const eventData = JSON.stringify({
             //Number: eventCounter,
@@ -75,74 +111,4 @@ app.post('/store-event', async (req, res) => {
     }
 });
 
-
-
-
-
-
-
-app.listen(4000, () => console.log(`Zoom Hello World app listening at PORT: 4000`))
-
-function generateHTML(bwt) {
-    return `
-        <html>
-            <head>
-                <title>websocket</title>
-            </head>
-            <body>
-                <script>
-                    var exampleSocket = new WebSocket("wss://ws.zoom.us/ws?subscriptionId=${process.env.subscription_id}&access_token=${bwt}");
-
-                    exampleSocket.onopen = function (event) {
-                        log("Connection...");
-                        var msg = {
-                            module: "heartbeat"
-                        };
-                        exampleSocket.send(JSON.stringify(msg));
-                    };
-                    
-                    exampleSocket.onmessage = function (event) {
-                        console.log(JSON.stringify(event.data));
-                        log(event.data);
-
-                        // Send a POST request to store the event data
-                        fetch('/store-event', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ eventData: typeof event.data === 'string' ? JSON.parse(event.data) : event.data }),
-
-                        })
-                        .then(response => response.json())
-                        .then(data => console.log('Event data stored:', data))
-                        .catch((error) => {
-                            console.error('Error:', error);
-                        });
-                    }
-                    
-                    exampleSocket.onclose = function(event){
-                        console.log(JSON.stringify(event));
-                        console.log(event);
-                    }
-                    
-                    var t = setInterval(function(){ 
-                        var msg = {
-                            module: "heartbeat"
-                        };
-                        exampleSocket.send(JSON.stringify(msg));
-                        log(JSON.stringify(msg));
-                    }, 25000);
-
-                    
-                    function log(text){
-                        var txt = document.createTextNode(text);
-                        var p = document.createElement("p");
-                        p.appendChild(txt);
-                        document.body.appendChild(p);
-                    }
-                </script>
-            </body>
-        </html>
-    `;
-}
+app.listen(4000, () => console.log(`Zoom Hello World app listening at PORT: 4000`));
