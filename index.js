@@ -1,8 +1,10 @@
-// Bring in environment secrets through dotenv
 require('dotenv/config')
-
-// Use the axios module to make HTTP requests from Node
 const axios = require('axios')
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+
+app.use(bodyParser.json());
 
 // Import Redis client
 const Redis = require('ioredis');
@@ -22,14 +24,14 @@ const redis = new Redis({
             }
         });
 
-        let bwt = response.data.access_token;
+        let access_token = response.data.access_token;
 
         // Logs your access tokens in the console
-        console.log(`access_token: ${bwt}`);
+        console.log(`access_token: ${access_token}`);
 
         // Connect to WebSocket
         const WebSocket = require('ws');
-        const exampleSocket = new WebSocket(`wss://ws.zoom.us/ws?subscriptionId=${process.env.subscription_id}&access_token=${bwt}`);
+        const exampleSocket = new WebSocket(`wss://ws.zoom.us/ws?subscriptionId=${process.env.subscription_id}&access_token=${access_token}`);
 
         exampleSocket.on('open', () => {
             console.log("Connection...");
@@ -71,12 +73,6 @@ const redis = new Redis({
         console.error('Error:', error);
     }
 })();
-
-const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
-
-app.use(bodyParser.json());
 
 let eventCounter = 1; // Initialize event counter
 
