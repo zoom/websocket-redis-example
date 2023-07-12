@@ -27,15 +27,6 @@ const redis = new Redis({
         // Logs your access tokens in the console
         console.log(`access_token: ${bwt}`);
 
-        // We can now use the access token to authenticate API calls
-        // Send a request to get your user information using the userID of the user.
-        let userResponse = await axios.get(`https://api.zoom.us/v2/users/${process.env.user_id}`, {
-            headers: { Authorization: `Bearer ${bwt}` }
-        });
-        
-        console.log(`User Id is ${process.env.user_id}`);
-        console.log('API call ', userResponse.data);
-
         // Connect to WebSocket
         const WebSocket = require('ws');
         const exampleSocket = new WebSocket(`wss://ws.zoom.us/ws?subscriptionId=${process.env.subscription_id}&access_token=${bwt}`);
@@ -111,4 +102,4 @@ app.post('/store-event', async (req, res) => {
     }
 });
 
-app.listen(4000, () => console.log(`Zoom Hello World app listening at PORT: 4000`));
+app.listen(4000, () => console.log(`Zoom Sample Websocket app listening at PORT: 4000`));

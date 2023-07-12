@@ -45,11 +45,10 @@ Follow these steps to install and set up the application:
    clientID=YOUR_CLIENT_ID
    clientSecret=YOUR_CLIENT_SECRET
    account_id=YOUR_ACCOUNT_ID
-   user_id=YOUR_USER_ID
    subscription_id=YOUR_SUBSCRIPTION_ID
    ```
 
-   Remember to replace `YOUR_CLIENT_ID`, `YOUR_CLIENT_SECRET`, `YOUR_ACCOUNT_ID`, `YOUR_USER_ID`, and `YOUR_SUBSCRIPTION_ID` with the actual values from your Server to server OAuth app.
+   Remember to replace `YOUR_CLIENT_ID`, `YOUR_CLIENT_SECRET`, `YOUR_ACCOUNT_ID`, and `YOUR_SUBSCRIPTION_ID` with the actual values from your Server to server OAuth app.
 
 ## Usage
 
@@ -57,11 +56,12 @@ To start the application, follow these steps:
 
 1. Start the application:
 
-   ```bash
+   ```
    npm start
    ```
 
-2. Open your web browser and go to [http://localhost:4000](http://localhost:4000). This will begin the authentication process and show the WebSocket events.
+The console will display the access token, user information, WebSocket connection status.
 
-   WebSocket events received from Zoom will be logged in the browser console and stored in Redis.
+2. Whenever you trigger the event that you have subscribed in the zoom app (for example meeting created / updated / deleted), you can see the payload in your console.
 
+3. Verify that the received event data is logged in the console and stored successfully in your redis database, as indicated by the output messages.
