@@ -15,7 +15,7 @@ Before running the application, make sure you have the following requirements:
 - Node.js installed on your computer
 - A Zoom account 
 - [Server to server Oauth app](https://developers.zoom.us/docs/internal-apps/create/) with [Websocket Configured](https://developers.zoom.us/docs/api/rest/websockets/)  ( required to get these credentials: client ID, client secret, account ID, user ID, subscription ID)
-- [Redis server installed and running on your machine] (https://redis.io/docs/getting-started/installation/install-redis-on-mac-os/)
+- [Redis server installed and running on your machine](https://redis.io/docs/getting-started/installation/install-redis-on-mac-os/)
 
 ## Installation
 
