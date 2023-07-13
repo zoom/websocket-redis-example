@@ -32,19 +32,34 @@ let eventCounter = 1; // Initialize event counter
 
         zoomWebSocket.on('open', () => {
             console.log("Connected to WebSocket");
-
-            // Send a heartbeat message
-            const msg = {
+        
+            // Define the heartbeat message
+            const heartbeatMessage = {
                 module: "heartbeat"
             };
-            zoomWebSocket.send(JSON.stringify(msg));
+        
+            // Set up a delay for the first heartbeat message
+            setTimeout(() => {
+                // Start sending heartbeat messages every 55 seconds after the initial delay
+                setInterval(() => {
+                    zoomWebSocket.send(JSON.stringify(heartbeatMessage));
+                    console.log('Heartbeat sent');
+                }, 55000); // 55000 milliseconds = 55 seconds
+            }, 55000); // Initial delay of 55 seconds
         });
+        
 
         zoomWebSocket.on('message', (data) => {
             console.log(`Received message: ${data}`);
 
+            // Convert the data from a Buffer to a string
+            let dataString = data.toString();
+
+                // Parse the string as JSON
+            let jsonData = JSON.parse(dataString);
+
             // Store the event data in Redis
-            redis.set(`zoom_event_${eventCounter}`, JSON.stringify(data));
+            redis.set(`zoom_event_${eventCounter}`, JSON.stringify(jsonData));
 
             eventCounter += 1; // Increment event counter
         });
