@@ -21,7 +21,7 @@ Follow these steps to install and set up the application:
 1. Clone the repository:
 
    ```
-   git clone [https://github.com/ojusave/Zoom-Websocket-Redis-Example.git](https://github.com/zoom/websocket-redis-example)
+   git clone https://github.com/zoom/websocket-redis-example
    ```
 
 2. Go to the project directory:
